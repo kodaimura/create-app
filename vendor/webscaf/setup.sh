@@ -134,6 +134,23 @@ copy_example_env() {
   fi
 }
 
+initialize_component() {
+  component_dir=$1
+  project_name=$2
+  init_command="$component_dir/bin/scaf-init"
+
+  if [ ! -e "$init_command" ]; then
+    return
+  fi
+
+  if [ ! -x "$init_command" ]; then
+    echo "Error: component initializer is not executable: $init_command" >&2
+    exit 1
+  fi
+
+  "$init_command" "$project_name"
+}
+
 render_file() {
   file=$1
   project_name=$2
@@ -177,6 +194,9 @@ generate_project() {
 
   echo "Cloning frontend: $frontend_repo"
   git clone --quiet --depth 1 "$frontend_repo" "$staging_dir/web"
+
+  initialize_component "$staging_dir/api" "$project_name"
+  initialize_component "$staging_dir/web" "$project_name"
 
   rm -rf "$staging_dir/api/.git" "$staging_dir/web/.git"
   cp -R "$TEMPLATES_DIR/." "$staging_dir/"
