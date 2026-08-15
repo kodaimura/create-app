@@ -41,13 +41,22 @@ assert_script_project() {
 create_component_repo() {
   repo_dir=$1
   service=$2
-  mkdir -p "$repo_dir"
+  mkdir -p "$repo_dir/bin"
   git -C "$repo_dir" init --quiet
   cat > "$repo_dir/docker-compose.yml" <<EOF
 services:
   $service:
     image: busybox:1.37
 EOF
+  cat > "$repo_dir/bin/scaf-init" <<'EOF'
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+printf '%s\n' "$1" > "$root_dir/.initialized"
+EOF
+  chmod +x "$repo_dir/bin/scaf-init"
   cp "$repo_dir/docker-compose.yml" "$repo_dir/docker-compose.prod.yml"
   printf 'EXAMPLE=value\n' > "$repo_dir/.env.example"
   git -C "$repo_dir" add .
@@ -60,9 +69,14 @@ EOF
 assert_web_project() {
   project_dir=$1
   assert_file "$project_dir/.webscaf"
+  project_name=$(sed -n 's/^project=//p' "$project_dir/.webscaf")
   assert_file "$project_dir/docker-compose.yml"
   assert_file "$project_dir/api/docker-compose.yml"
   assert_file "$project_dir/web/docker-compose.yml"
+  assert_file "$project_dir/api/.initialized"
+  assert_file "$project_dir/web/.initialized"
+  grep -qxF "$project_name" "$project_dir/api/.initialized"
+  grep -qxF "$project_name" "$project_dir/web/.initialized"
   [ ! -d "$project_dir/api/.git" ] || fail "backend git metadata remains"
   [ ! -d "$project_dir/web/.git" ] || fail "frontend git metadata remains"
   if command -v docker >/dev/null 2>&1; then
