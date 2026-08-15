@@ -1,0 +1,4 @@
+version=1
+project={{PROJECT_NAME}}
+pattern={{PATTERN_ID}}
+description={{PATTERN_LABEL}}
