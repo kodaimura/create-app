@@ -86,12 +86,6 @@ make clean
 生成物には、実行コード、最小限のテスト、Docker Compose環境、Makefile、
 VS Code設定、生成情報を保持する`.mkscaf`が含まれます。
 
-Laravelの旧生成処理は互換用コマンドとして残しています。
-
-```sh
-mkscaf legacy laravel
-```
-
 ## Webscafの管理
 
 `webscaf`は単体リポジトリでも従来どおり利用できます。mkscafにはGit subtreeとして

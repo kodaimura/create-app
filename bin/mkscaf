@@ -15,7 +15,6 @@ Usage:
   mkscaf script patterns
   mkscaf web [pattern project-name [output-directory]]
   mkscaf web patterns
-  mkscaf legacy laravel
 
 Examples:
   mkscaf script python my-script
@@ -63,13 +62,6 @@ case "${1:-}" in
     shift
     export WEBSCAF_COMMAND_NAME="mkscaf web"
     exec "$WEBSCAF_COMMAND" "$@"
-    ;;
-  legacy)
-    if [ "${2:-}" != "laravel" ] || [ "$#" -ne 2 ]; then
-      usage >&2
-      exit 1
-    fi
-    exec "$ROOT_DIR/sh/web-laravel.sh"
     ;;
   *)
     echo "Error: unknown command '$1'." >&2

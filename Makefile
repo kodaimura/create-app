@@ -4,10 +4,10 @@ WEBSCAF_REF ?= main
 .PHONY: grant check test update_webscaf
 
 grant:
-	chmod +x bin/* lib/*.sh sh/*.sh vendor/webscaf/bin/* vendor/webscaf/setup.sh
+	chmod +x bin/* lib/*.sh vendor/webscaf/bin/* vendor/webscaf/setup.sh
 
 check:
-	@find bin lib sh vendor/webscaf/bin -type f \( -name '*.sh' -o -path '*/bin/*' \) -exec bash -n {} \;
+	@find bin lib vendor/webscaf/bin -type f \( -name '*.sh' -o -path '*/bin/*' \) -exec bash -n {} \;
 	bash -n vendor/webscaf/setup.sh
 	$(MAKE) test
 
