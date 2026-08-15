@@ -1,7 +1,8 @@
-FROM golang:1.24
+FROM golang:1.26-alpine
 
 WORKDIR /app
 
-COPY main.go .
+COPY go.mod ./
+COPY *.go ./
 
-CMD ["go", "run", "main.go"]
+CMD ["go", "run", "."]

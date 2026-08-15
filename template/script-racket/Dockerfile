@@ -1,7 +1,7 @@
-FROM racket/racket:8.9-full
+FROM racket/racket:9.2
 
 WORKDIR /app
 
-COPY . /app
+COPY *.rkt ./
 
 CMD ["racket", "main.rkt"]

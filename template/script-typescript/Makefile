@@ -7,7 +7,7 @@ run:
 	docker compose run --rm --build app
 
 test:
-	docker compose run --rm --build app python -m unittest discover -v
+	docker compose run --rm --build app npm test
 
 shell:
 	docker compose run --rm --build app sh

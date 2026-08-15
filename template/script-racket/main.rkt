@@ -1,6 +1,9 @@
 #lang racket
 
-(define (main)
-  (displayln "Hello, Racket!"))
+(provide greeting)
 
-(main)
+(define (greeting)
+  "Hello, Racket!")
+
+(module+ main
+  (displayln (greeting)))

@@ -7,11 +7,9 @@
 ## 必要要件
 
 - Bash
-- Git
 - Docker / Docker Compose
 - Make
-
-Juliaパッケージ生成時のみ、グローバルGitユーザー設定を使用します。
+- Git（Webアプリケーション生成時）
 
 ## インストール
 
@@ -50,6 +48,7 @@ webscaf
 ```sh
 mkscaf script python my-script
 mkscaf script go my-tool ../my-tool
+mkscaf script typescript my-tool
 
 mkscaf web fast-react my-app
 mkscaf web nest-next my-next-app ../my-next-app
@@ -63,6 +62,29 @@ mkscaf script patterns
 mkscaf web patterns
 webscaf patterns
 ```
+
+### Scriptテンプレート
+
+| 言語 | 実行環境 | エントリーポイント | テスト |
+| --- | --- | --- | --- |
+| Go | Go 1.26 | `main.go` | `go test` |
+| Julia | Julia 1.12.6 | `main.jl` | `Test`標準ライブラリ |
+| Python | Python 3.14 | `main.py` | `unittest` |
+| Racket | Racket 9.2 | `main.rkt` | Racket標準機能 |
+| TypeScript | Node.js 24 / TypeScript 7 | `src/index.ts` | `node:test` |
+
+どの言語も同じ操作で利用できます。
+
+```sh
+make run
+make test
+make build
+make shell
+make clean
+```
+
+生成物には、実行コード、最小限のテスト、Docker Compose環境、Makefile、
+VS Code設定、生成情報を保持する`.mkscaf`が含まれます。
 
 Laravelの旧生成処理は互換用コマンドとして残しています。
 
@@ -88,5 +110,5 @@ make check
 make check
 ```
 
-対話式・引数式のScript生成、`mkscaf web`と`webscaf`の生成結果一致、既存パスの
-上書き防止を一時ディレクトリ内で検証します。
+全言語のScript生成、対話式・引数式、`mkscaf web`と`webscaf`の生成結果一致、
+既存パスの上書き防止を一時ディレクトリ内で検証します。

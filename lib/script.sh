@@ -15,17 +15,18 @@ Usage:
   $COMMAND_NAME <language> <project-name> [output-directory]
 
 Languages:
-  go, julia, python, racket
+  go, julia, python, racket, typescript
 EOF
 }
 
 print_patterns() {
   cat <<'EOF'
 Available script languages:
-  go       Go
-  julia    Julia package
-  python   Python
-  racket   Racket
+  go          Go
+  julia       Julia
+  python      Python
+  racket      Racket
+  typescript  TypeScript
 EOF
 }
 
@@ -35,7 +36,8 @@ choose_language() {
   echo "  2) Julia"
   echo "  3) Python"
   echo "  4) Racket"
-  printf "Enter number [1-4]: "
+  echo "  5) TypeScript"
+  printf "Enter number [1-5]: "
   read -r choice
 
   case "$choice" in
@@ -43,8 +45,9 @@ choose_language() {
     2) language=julia ;;
     3) language=python ;;
     4) language=racket ;;
+    5) language=typescript ;;
     *)
-      echo "Error: enter a number between 1 and 4." >&2
+      echo "Error: enter a number between 1 and 5." >&2
       exit 1
       ;;
   esac
@@ -52,7 +55,7 @@ choose_language() {
 
 validate_language() {
   case "$1" in
-    go|julia|python|racket) ;;
+    go|julia|python|racket|typescript) ;;
     *)
       echo "Error: unknown script language '$1'." >&2
       echo >&2
@@ -70,23 +73,6 @@ validate_project_name() {
       exit 1
       ;;
   esac
-
-  if [ "$language" = "julia" ]; then
-    case "$project_name" in
-      [A-Za-z]*)
-        case "$project_name" in
-          *[!A-Za-z0-9_]*)
-            echo "Error: Julia package names must start with a letter and use only letters, numbers, or '_'." >&2
-            exit 1
-            ;;
-        esac
-        ;;
-      *)
-        echo "Error: Julia package names must start with a letter and use only letters, numbers, or '_'." >&2
-        exit 1
-        ;;
-    esac
-  fi
 }
 
 absolute_path() {
@@ -116,26 +102,24 @@ generate_template_project() {
   fi
 
   cp -R "$source_dir/." "$staging_dir/project/"
-}
 
-generate_julia_project() {
-  docker_bin=${MKSCAF_DOCKER_BIN:-docker}
-  git_user=$(git config --global user.name || true)
-  git_email=$(git config --global user.email || true)
-  if [ -z "$git_user" ] || [ -z "$git_email" ]; then
-    echo "Error: Julia generation requires global git user.name and user.email." >&2
-    exit 1
+  case "$language" in
+    go|typescript)
+      project_slug=$(printf '%s' "$project_name" | tr '[:upper:]_' '[:lower:]-')
+      ;;
+  esac
+
+  if [ "$language" = "go" ]; then
+    sed "s/__PROJECT_NAME__/$project_slug/g" \
+      "$staging_dir/project/go.mod" > "$staging_dir/project/go.mod.tmp"
+    mv "$staging_dir/project/go.mod.tmp" "$staging_dir/project/go.mod"
+  elif [ "$language" = "typescript" ]; then
+    for package_file in package.json package-lock.json; do
+      sed "s/__PROJECT_NAME__/$project_slug/g" \
+        "$staging_dir/project/$package_file" > "$staging_dir/project/$package_file.tmp"
+      mv "$staging_dir/project/$package_file.tmp" "$staging_dir/project/$package_file"
+    done
   fi
-
-  "$docker_bin" run --rm \
-    -v "$staging_dir:/workspace" \
-    -e GIT_USER="$git_user" \
-    -e GIT_EMAIL="$git_email" \
-    -e PROJECT_NAME="$project_name" \
-    julia:1.12.6 sh -c \
-    'apt-get update >/dev/null && apt-get install -y git >/dev/null && julia -e '\''using Pkg; Pkg.add("PkgTemplates"); using PkgTemplates; Template(user=ENV["GIT_USER"], dir="/workspace")(ENV["PROJECT_NAME"])'\'''
-
-  mv "$staging_dir/$project_name" "$staging_dir/project"
 }
 
 generate_project() {
@@ -157,12 +141,8 @@ generate_project() {
   }
   trap cleanup EXIT INT TERM
 
-  if [ "$language" = "julia" ]; then
-    generate_julia_project
-  else
-    mkdir "$staging_dir/project"
-    generate_template_project
-  fi
+  mkdir "$staging_dir/project"
+  generate_template_project
 
   cp -R "$ROOT_DIR/.vscode" "$staging_dir/project/.vscode"
   write_metadata "$staging_dir/project"
@@ -174,8 +154,8 @@ generate_project() {
   echo "Created $language script scaffold at: $output_dir"
   echo "Next steps:"
   echo "  cd $output_dir"
-  echo "  make build"
-  echo "  make up"
+  echo "  make run"
+  echo "  make test"
 }
 
 if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then

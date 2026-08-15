@@ -22,6 +22,22 @@ assert_file() {
   [ -f "$1" ] || fail "missing file: $1"
 }
 
+assert_script_project() {
+  project_dir=$1
+  language=$2
+  entrypoint=$3
+  assert_file "$project_dir/.mkscaf"
+  assert_file "$project_dir/.vscode/settings.json"
+  assert_file "$project_dir/Dockerfile"
+  assert_file "$project_dir/Makefile"
+  assert_file "$project_dir/docker-compose.yml"
+  assert_file "$project_dir/$entrypoint"
+  grep -q "^language=$language$" "$project_dir/.mkscaf"
+  if command -v docker >/dev/null 2>&1; then
+    docker compose -f "$project_dir/docker-compose.yml" config --quiet
+  fi
+}
+
 create_component_repo() {
   repo_dir=$1
   service=$2
@@ -54,45 +70,38 @@ assert_web_project() {
   fi
 }
 
-"$MKSCAF" script go go-app "$TEMP_DIR/go-app" >/dev/null
-assert_file "$TEMP_DIR/go-app/main.go"
+"$MKSCAF" script go Go_App "$TEMP_DIR/go-app" >/dev/null
+assert_script_project "$TEMP_DIR/go-app" go main.go
+assert_file "$TEMP_DIR/go-app/main_test.go"
+assert_file "$TEMP_DIR/go-app/go.mod"
+grep -q '^module go-app$' "$TEMP_DIR/go-app/go.mod"
+
+"$MKSCAF" script julia julia-app "$TEMP_DIR/julia-app" >/dev/null
+assert_script_project "$TEMP_DIR/julia-app" julia main.jl
+assert_file "$TEMP_DIR/julia-app/Project.toml"
+assert_file "$TEMP_DIR/julia-app/test/runtests.jl"
 
 "$MKSCAF" script python python-app "$TEMP_DIR/python-app" >/dev/null
-assert_file "$TEMP_DIR/python-app/main.py"
-assert_file "$TEMP_DIR/python-app/.mkscaf"
-grep -q '^language=python$' "$TEMP_DIR/python-app/.mkscaf"
+assert_script_project "$TEMP_DIR/python-app" python main.py
+assert_file "$TEMP_DIR/python-app/test_main.py"
 
 "$MKSCAF" script racket racket-app "$TEMP_DIR/racket-app" >/dev/null
-assert_file "$TEMP_DIR/racket-app/main.rkt"
+assert_script_project "$TEMP_DIR/racket-app" racket main.rkt
+assert_file "$TEMP_DIR/racket-app/test.rkt"
 
-FAKE_DOCKER="$TEMP_DIR/fake-docker"
-cat > "$FAKE_DOCKER" <<'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-for argument in "$@"; do
-  case "$argument" in
-    *:/workspace) staging_dir=${argument%:/workspace} ;;
-    PROJECT_NAME=*) project_name=${argument#PROJECT_NAME=} ;;
-  esac
-done
-mkdir -p "$staging_dir/$project_name"
-printf 'name = "%s"\n' "$project_name" > "$staging_dir/$project_name/Project.toml"
-EOF
-chmod +x "$FAKE_DOCKER"
-MKSCAF_DOCKER_BIN="$FAKE_DOCKER" \
-  "$MKSCAF" script julia JuliaApp "$TEMP_DIR/julia-app" >/dev/null
-assert_file "$TEMP_DIR/julia-app/Project.toml"
+"$MKSCAF" script typescript TypeScript_App "$TEMP_DIR/typescript-app" >/dev/null
+assert_script_project "$TEMP_DIR/typescript-app" typescript src/index.ts
+assert_file "$TEMP_DIR/typescript-app/src/index.test.ts"
+assert_file "$TEMP_DIR/typescript-app/package-lock.json"
+grep -q '^  "name": "typescript-app",$' "$TEMP_DIR/typescript-app/package.json"
 
-if MKSCAF_DOCKER_BIN="$FAKE_DOCKER" \
-  "$MKSCAF" script julia 'Julia-App' "$TEMP_DIR/invalid-julia" >/dev/null 2>&1; then
-  fail "invalid Julia package name was accepted"
-fi
+"$MKSCAF" script patterns | grep -q 'typescript'
 
 (
   cd "$TEMP_DIR"
   printf '1\n1\ninteractive-go\n\n' | "$MKSCAF" >/dev/null
 )
-assert_file "$TEMP_DIR/interactive-go/main.go"
+assert_script_project "$TEMP_DIR/interactive-go" go main.go
 
 mkdir "$TEMP_DIR/existing"
 if "$MKSCAF" script racket existing "$TEMP_DIR/existing" >/dev/null 2>&1; then
