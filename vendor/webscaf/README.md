@@ -1,10 +1,11 @@
 # webscaf
 
-Webアプリケーションのバックエンドとフロントエンドを組み合わせて、認証機能付きのプロジェクトを生成するスキャフォルドツールです。
+A scaffold CLI that combines a backend and frontend into an authentication-ready
+web application.
 
-## 対応パターン
+## Supported patterns
 
-| パターン | バックエンド | フロントエンド |
+| Pattern | Backend | Frontend |
 | --- | --- | --- |
 | `fast-react` | [FastAPI](https://github.com/kodaimura/scaf-fast) | [React](https://github.com/kodaimura/scaf-react) |
 | `fast-next` | [FastAPI](https://github.com/kodaimura/scaf-fast) | [Next.js](https://github.com/kodaimura/scaf-next) |
@@ -15,76 +16,69 @@ Webアプリケーションのバックエンドとフロントエンドを組�
 | `nest-react` | [NestJS](https://github.com/kodaimura/scaf-nest) | [React](https://github.com/kodaimura/scaf-react) |
 | `nest-next` | [NestJS](https://github.com/kodaimura/scaf-nest) | [Next.js](https://github.com/kodaimura/scaf-next) |
 
-パターンは `patterns/*.conf` として独立しています。今後、別のバックエンドやフロントエンドを既存の生成処理を変更せずに追加できます。
+Patterns are defined independently in `patterns/*.conf`, so additional backend
+and frontend combinations can be added without changing the generation flow.
 
-## 必要要件
+## Requirements
 
 - Bash
 - Git
 - Docker Compose
 - Make
 
-## インストール
+## Installation
 
-最初に一度だけcloneし、`bin` ディレクトリをPATHへ追加します。
+Clone webscaf once and add its `bin` directory to `PATH`:
 
 ```sh
 mkdir -p ~/bin
-# ~/bin/webscaf は任意のclone先に変更できます。変更する場合は、次のPATHも同じ場所に合わせてください。
+# Change ~/bin/webscaf if you prefer another clone location, and update PATH to match.
 git clone https://github.com/kodaimura/webscaf.git ~/bin/webscaf
 echo 'export PATH="$HOME/bin/webscaf/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
-別の場所へclone済みの場合は、その絶対パスの `bin` を追加してください。
+If the repository is already located elsewhere, add its absolute `bin` path:
 
 ```sh
 export PATH="/absolute/path/to/webscaf/bin:$PATH"
 ```
 
-登録を確認します。
+Verify the installation:
 
 ```sh
 webscaf --help
 webscaf patterns
 ```
 
-以後、プロジェクトを作成するたびに `webscaf` をcloneする必要はありません。ツールを更新するときは、最初にcloneしたリポジトリで `git pull --ff-only` を実行します。
+You do not need to clone webscaf again for each project. Update the original
+clone with `git pull --ff-only` when needed.
 
-## 使い方
+## Usage
 
-対話形式で生成する場合：
+Start the interactive prompt:
 
 ```sh
 webscaf
 ```
 
-パターンとプロジェクト名を指定する場合：
+Specify a pattern and project name directly:
 
 ```sh
 webscaf fast-react my-app
-```
-
-NestJSとReactを組み合わせる場合：
-
-```sh
 webscaf nest-react my-app
-```
-
-Next.jsを使用する場合：
-
-```sh
 webscaf fast-next my-next-app
 webscaf nest-next my-next-app
 ```
 
-デフォルトでは、現在のディレクトリに `my-app` が作成されます。出力先を明示することもできます。
+By default, the project is created under the current directory. An explicit
+output directory can be provided as the third argument:
 
 ```sh
 webscaf fast-react my-app ../my-app
 ```
 
-生成後：
+Start the generated application:
 
 ```sh
 cd my-app
@@ -98,31 +92,22 @@ make migrate
 - Health: http://localhost:8000/health
 - MailHog: http://localhost:8025
 
-## 生成される構成
+## Generated structure
 
 ```text
 my-app/
-  api/                  # 選択したバックエンド
-  web/                  # 選択したフロントエンド
-  .env                  # Compose共通設定
-  .webscaf              # 生成元パターンのメタデータ
+  api/                  # selected backend
+  web/                  # selected frontend
+  .env                  # shared Compose settings
+  .webscaf              # generation metadata
   docker-compose.yml
   docker-compose.prod.yml
   Makefile
 ```
 
-各コンポーネントのDocker Composeをルートから合成しているため、バックエンドやフロントエンド固有の開発コマンドもそれぞれのディレクトリで利用できます。
+The root Compose files combine both components. Framework-specific commands
+remain available from the `api` and `web` directories.
 
-コンポーネントに実行可能な`bin/scaf-init`がある場合、webscafはclone直後に
-プロジェクト名を渡して実行します。Go module、npm package、画面タイトルなどの
-テンプレート固有の識別子は各scaf側の規則で初期化されます。
-
-## ローカルリポジトリからの生成
-
-テンプレート開発時は、環境変数でクローン元を上書きできます。
-
-```sh
-WEBSCAF_BACKEND_REPO=/path/to/scaf-fast \
-WEBSCAF_FRONTEND_REPO=/path/to/scaf-next \
-webscaf fast-next my-app
-```
+When a component provides an executable `bin/scaf-init`, webscaf runs it with
+the project name immediately after cloning. Each scaffold is responsible for
+initializing its module name, package name, Compose resources, and UI title.
