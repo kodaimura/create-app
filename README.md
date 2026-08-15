@@ -1,49 +1,51 @@
 # mkscaf
 
-複数言語の小さなスクリプト環境と、認証機能付きWebアプリケーションを生成する対話式CLIです。
-[webscaf](https://github.com/kodaimura/webscaf)を内包しているため、mkscafをインストールすると
-`mkscaf web`と`webscaf`の両方を利用できます。
+An interactive CLI for generating small script projects in multiple languages
+and authentication-ready web applications.
 
-## 必要要件
+mkscaf includes [webscaf](https://github.com/kodaimura/webscaf), so installing
+mkscaf provides both `mkscaf web` and the standalone `webscaf` command.
+
+## Requirements
 
 - Bash
 - Docker / Docker Compose
 - Make
-- Git（Webアプリケーション生成時）
+- Git for web application generation
 
-## インストール
+## Installation
 
 ```sh
 mkdir -p ~/bin
-# ~/bin/mkscafは任意のclone先へ変更できます。PATHも同じ場所に合わせてください。
+# Change ~/bin/mkscaf if you prefer another clone location, and update PATH to match.
 git clone https://github.com/kodaimura/mkscaf.git ~/bin/mkscaf
 echo 'export PATH="$HOME/bin/mkscaf/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 make -C ~/bin/mkscaf grant
 ```
 
-## 対話形式
+## Interactive usage
 
-プロジェクト種別から選ぶ場合：
+Select a project type first:
 
 ```sh
 mkscaf
 ```
 
-Script言語の選択から始める場合：
+Start with the script language prompt:
 
 ```sh
 mkscaf script
 ```
 
-Webパターンの選択から始める場合は、どちらも同じWebscafを実行します。
+Start with the web pattern prompt. Both commands use the same bundled webscaf:
 
 ```sh
 mkscaf web
 webscaf
 ```
 
-## 引数指定
+## Direct usage
 
 ```sh
 mkscaf script python my-script
@@ -55,7 +57,7 @@ mkscaf web nest-next my-next-app ../my-next-app
 webscaf fast-react my-app
 ```
 
-利用可能な選択肢：
+List the available choices:
 
 ```sh
 mkscaf script patterns
@@ -63,17 +65,17 @@ mkscaf web patterns
 webscaf patterns
 ```
 
-### Scriptテンプレート
+### Script templates
 
-| 言語 | 実行環境 | エントリーポイント | テスト |
+| Language | Runtime | Entry point | Tests |
 | --- | --- | --- | --- |
 | Go | Go 1.26 | `main.go` | `go test` |
-| Julia | Julia 1.12.6 | `main.jl` | `Test`標準ライブラリ |
+| Julia | Julia 1.12.6 | `main.jl` | `Test` standard library |
 | Python | Python 3.14 | `main.py` | `unittest` |
-| Racket | Racket 9.2 | `main.rkt` | Racket標準機能 |
+| Racket | Racket 9.2 | `main.rkt` | Racket standard library |
 | TypeScript | Node.js 24 / TypeScript 7 | `src/index.ts` | `node:test` |
 
-どの言語も同じ操作で利用できます。
+Every script template provides the same development commands:
 
 ```sh
 make run
@@ -83,26 +85,29 @@ make shell
 make clean
 ```
 
-生成物には、実行コード、最小限のテスト、Docker Compose環境、Makefile、
-VS Code設定、生成情報を保持する`.mkscaf`が含まれます。
+Generated projects include executable code, focused tests, a Docker Compose
+environment, a Makefile, VS Code settings, and `.mkscaf` generation metadata.
 
-## Webscafの管理
+## Managing webscaf
 
-`webscaf`は単体リポジトリでも従来どおり利用できます。mkscafにはGit subtreeとして
-`vendor/webscaf`へ内包し、追加cloneやsubmodule初期化なしで動作させています。
+webscaf remains available as a standalone repository. mkscaf vendors it under
+`vendor/webscaf` using Git subtree, so no additional clone or submodule setup is
+required.
 
-Web生成機能は先にwebscafリポジトリで変更・検証し、その後mkscaf側を更新します。
+Develop and verify web generation changes in the webscaf repository first,
+then update the bundled copy and run the mkscaf checks:
 
 ```sh
 make update_webscaf
 make check
 ```
 
-## 検証
+## Verification
 
 ```sh
 make check
 ```
 
-全言語のScript生成、対話式・引数式、`mkscaf web`と`webscaf`の生成結果一致、
-既存パスの上書き防止を一時ディレクトリ内で検証します。
+The checks cover every script language, interactive and direct usage,
+equivalent output from `mkscaf web` and `webscaf`, scaffold component
+initialization, and protection against overwriting existing paths.
