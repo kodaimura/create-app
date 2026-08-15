@@ -1,95 +1,80 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-SH_DIR=$(
-  cd "$(dirname "$0")/../sh"
-  pwd
-)
+set -euo pipefail
 
-echo -e "\033[1;34m🚀 Create Project Scaffold! 🚀\033[0m"
-echo -e "\033[1;32mChoose a project type:\033[0m"
-echo -e "1. Web Application"
-echo -e "2. Script"
-echo -e "\033[1;32mPlease select a number between 1-2:\033[0m"
+BIN_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+ROOT_DIR=$(CDPATH= cd -- "$BIN_DIR/.." && pwd)
+SCRIPT_COMMAND="$ROOT_DIR/lib/script.sh"
+WEBSCAF_COMMAND="$ROOT_DIR/vendor/webscaf/setup.sh"
 
-read -p "Enter your choice (1-2): " project_type
-echo ""
+usage() {
+  cat <<'EOF'
+Usage:
+  mkscaf
+  mkscaf script [language project-name [output-directory]]
+  mkscaf script patterns
+  mkscaf web [pattern project-name [output-directory]]
+  mkscaf web patterns
+  mkscaf legacy laravel
 
-case $project_type in
-1)
-  echo -e "\033[1;33mWhat framework do you want to use for the Web Application?\033[0m"
-  echo -e "1. Gin (Go)"
-  echo -e "2. Gin (Go) + Next.js (TypeScript)"
-  echo -e "3. Genie (Julia)"
-  echo -e "4. Genie (Julia) + Next.js (TypeScript)"
-  echo -e "5. Laravel (PHP)"
-  echo -e "\033[1;32mPlease select a number between 1-5:\033[0m"
+Examples:
+  mkscaf script python my-script
+  mkscaf web fast-react my-app
+  mkscaf web
+EOF
+}
 
-  read -p "Enter your choice (1-5): " lang
-  echo ""
+choose_project_type() {
+  echo "Select a project type:"
+  echo "  1) Script"
+  echo "  2) Web application"
+  printf "Enter number [1-2]: "
+  read -r choice
 
-  case $lang in
-  1)
-    echo -e "\033[1;36mScaffolding a Gin web application...\033[0m"
-    $SH_DIR/web-gin.sh
+  case "$choice" in
+    1)
+      export MKSCAF_SCRIPT_COMMAND_NAME="mkscaf script"
+      exec "$SCRIPT_COMMAND"
+      ;;
+    2)
+      export WEBSCAF_COMMAND_NAME="mkscaf web"
+      exec "$WEBSCAF_COMMAND"
+      ;;
+    *)
+      echo "Error: enter a number between 1 and 2." >&2
+      exit 1
+      ;;
+  esac
+}
+
+case "${1:-}" in
+  "")
+    choose_project_type
     ;;
-  2)
-    echo -e "\033[1;36mScaffolding a Gin + Nextjs web application...\033[0m"
-    $SH_DIR/web-gin-next.sh
+  -h|--help|help)
+    usage
     ;;
-  3)
-    echo -e "\033[1;36mScaffolding a Genie web application...\033[0m"
-    $SH_DIR/web-genie.sh
+  script)
+    shift
+    export MKSCAF_SCRIPT_COMMAND_NAME="mkscaf script"
+    exec "$SCRIPT_COMMAND" "$@"
     ;;
-  4)
-    echo -e "\033[1;36mScaffolding a Genie + Nextjs web application...\033[0m"
-    $SH_DIR/web-genie-next.sh
+  web)
+    shift
+    export WEBSCAF_COMMAND_NAME="mkscaf web"
+    exec "$WEBSCAF_COMMAND" "$@"
     ;;
-  5)
-    echo -e "\033[1;36mScaffolding a Laravel web application...\033[0m"
-    $SH_DIR/web-laravel.sh
+  legacy)
+    if [ "${2:-}" != "laravel" ] || [ "$#" -ne 2 ]; then
+      usage >&2
+      exit 1
+    fi
+    exec "$ROOT_DIR/sh/web-laravel.sh"
     ;;
   *)
-    echo -e "\033[1;31m❌ Invalid choice. Please choose a number between 1-5.\033[0m"
+    echo "Error: unknown command '$1'." >&2
+    echo >&2
+    usage >&2
     exit 1
     ;;
-  esac
-  ;;
-2)
-  echo -e "\033[1;33mWhat language do you want to use for the Script?\033[0m"
-  echo -e "1. Go"
-  echo -e "2. Julia"
-  echo -e "3. Python"
-  echo -e "4. Racket"
-  echo -e "\033[1;32mPlease select a number between 1-4:\033[0m"
-
-  read -p "Enter your choice (1-4): " lang
-  echo ""
-
-  case $lang in
-  1)
-    echo -e "\033[1;36mScaffolding a Go script...\033[0m"
-    $SH_DIR/script-go.sh
-    ;;
-  2)
-    echo -e "\033[1;36mScaffolding a Julia script...\033[0m"
-    $SH_DIR/script-julia.sh
-    ;;
-  3)
-    echo -e "\033[1;36mScaffolding a Python script...\033[0m"
-    $SH_DIR/script-python.sh
-    ;;
-  4)
-    echo -e "\033[1;36mScaffolding a Racket script...\033[0m"
-    $SH_DIR/script-racket.sh
-    ;;
-  *)
-    echo -e "\033[1;31m❌ Invalid choice. Please choose a number between 1-4.\033[0m"
-    exit 1
-    ;;
-  esac
-  ;;
-*)
-  echo -e "\033[1;31m❌ Invalid choice. Please run the script again and choose a number between 1-2.\033[0m"
-  exit 1
-  ;;
 esac
