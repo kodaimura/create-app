@@ -63,12 +63,16 @@ EOF
     -c user.name='mkscaf test' \
     -c user.email='mkscaf@example.com' \
     commit --quiet -m 'test fixture'
+  git -C "$repo_dir" tag v2.1.0
 }
 
 assert_web_project() {
   project_dir=$1
   assert_file "$project_dir/.webscaf"
   project_name=$(sed -n 's/^project=//p' "$project_dir/.webscaf")
+  grep -qxF 'version=2' "$project_dir/.webscaf"
+  grep -qxF 'backend_ref=v2.1.0' "$project_dir/.webscaf"
+  grep -qxF 'frontend_ref=v2.1.0' "$project_dir/.webscaf"
   assert_file "$project_dir/docker-compose.yml"
   assert_file "$project_dir/api/docker-compose.yml"
   assert_file "$project_dir/web/docker-compose.yml"

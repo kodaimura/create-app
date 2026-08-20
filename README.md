@@ -90,7 +90,8 @@ environment, a Makefile, VS Code settings, and `.mkscaf` generation metadata.
 
 webscaf remains available as a standalone repository. mkscaf vendors it under
 `vendor/webscaf` using Git subtree, so no additional clone or submodule setup is
-required.
+required. The bundled webscaf patterns currently pin all backend and frontend
+scaffolds to the `v2.1.0` release.
 
 Develop and verify web generation changes in the webscaf repository first,
 then update the bundled copy and run the mkscaf checks:

@@ -18,6 +18,8 @@ web application.
 
 Patterns are defined independently in `patterns/*.conf`, so additional backend
 and frontend combinations can be added without changing the generation flow.
+Every current pattern pins both components to the `v2.1.0` release. Generated
+`.webscaf` metadata records the repositories and refs that were actually used.
 
 ## Requirements
 

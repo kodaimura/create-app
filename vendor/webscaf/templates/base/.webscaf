@@ -1,4 +1,8 @@
-version=1
+version=2
 project={{PROJECT_NAME}}
 pattern={{PATTERN_ID}}
 description={{PATTERN_LABEL}}
+backend_repo={{BACKEND_REPO}}
+backend_ref={{BACKEND_REF}}
+frontend_repo={{FRONTEND_REPO}}
+frontend_ref={{FRONTEND_REF}}

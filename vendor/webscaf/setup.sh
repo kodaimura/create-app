@@ -22,7 +22,9 @@ Examples:
 
 Environment overrides for local mirrors or testing:
   WEBSCAF_BACKEND_REPO=/path/to/backend
+  WEBSCAF_BACKEND_REF=v2.1.0
   WEBSCAF_FRONTEND_REPO=/path/to/frontend
+  WEBSCAF_FRONTEND_REF=v2.1.0
 EOF
 }
 
@@ -54,7 +56,9 @@ load_pattern() {
   : "${PATTERN_ORDER:?PATTERN_ORDER is required}"
   : "${PATTERN_LABEL:?PATTERN_LABEL is required}"
   : "${BACKEND_REPO:?BACKEND_REPO is required}"
+  : "${BACKEND_REF:?BACKEND_REF is required}"
   : "${FRONTEND_REPO:?FRONTEND_REPO is required}"
+  : "${FRONTEND_REF:?FRONTEND_REF is required}"
 }
 
 print_patterns() {
@@ -201,11 +205,19 @@ render_file() {
   project_name=$2
   pattern_id=$3
   pattern_label=$4
+  backend_repo=$5
+  backend_ref=$6
+  frontend_repo=$7
+  frontend_ref=$8
 
   sed \
     -e "s|{{PROJECT_NAME}}|$project_name|g" \
     -e "s|{{PATTERN_ID}}|$pattern_id|g" \
     -e "s|{{PATTERN_LABEL}}|$pattern_label|g" \
+    -e "s|{{BACKEND_REPO}}|$backend_repo|g" \
+    -e "s|{{BACKEND_REF}}|$backend_ref|g" \
+    -e "s|{{FRONTEND_REPO}}|$frontend_repo|g" \
+    -e "s|{{FRONTEND_REF}}|$frontend_ref|g" \
     "$file" > "$file.rendered"
   mv "$file.rendered" "$file"
 }
@@ -232,13 +244,17 @@ generate_project() {
   trap cleanup EXIT INT TERM
 
   backend_repo=${WEBSCAF_BACKEND_REPO:-$BACKEND_REPO}
+  backend_ref=${WEBSCAF_BACKEND_REF:-$BACKEND_REF}
   frontend_repo=${WEBSCAF_FRONTEND_REPO:-$FRONTEND_REPO}
+  frontend_ref=${WEBSCAF_FRONTEND_REF:-$FRONTEND_REF}
 
-  echo "Cloning backend: $backend_repo"
-  git clone --quiet --depth 1 "$backend_repo" "$staging_dir/api"
+  echo "Cloning backend: $backend_repo ($backend_ref)"
+  git -c advice.detachedHead=false clone \
+    --quiet --depth 1 --branch "$backend_ref" "$backend_repo" "$staging_dir/api"
 
-  echo "Cloning frontend: $frontend_repo"
-  git clone --quiet --depth 1 "$frontend_repo" "$staging_dir/web"
+  echo "Cloning frontend: $frontend_repo ($frontend_ref)"
+  git -c advice.detachedHead=false clone \
+    --quiet --depth 1 --branch "$frontend_ref" "$frontend_repo" "$staging_dir/web"
 
   initialize_component "$staging_dir/api" "$project_name"
   initialize_component "$staging_dir/web" "$project_name"
@@ -254,9 +270,18 @@ generate_project() {
   cp -R "$TEMPLATES_DIR/." "$staging_dir/"
   mv "$staging_dir/env.template" "$staging_dir/.env.example"
 
-  render_file "$staging_dir/.env.example" "$project_name" "$PATTERN_ID" "$PATTERN_LABEL"
-  render_file "$staging_dir/README.md" "$project_name" "$PATTERN_ID" "$PATTERN_LABEL"
-  render_file "$staging_dir/.webscaf" "$project_name" "$PATTERN_ID" "$PATTERN_LABEL"
+  render_file \
+    "$staging_dir/.env.example" \
+    "$project_name" "$PATTERN_ID" "$PATTERN_LABEL" \
+    "$backend_repo" "$backend_ref" "$frontend_repo" "$frontend_ref"
+  render_file \
+    "$staging_dir/README.md" \
+    "$project_name" "$PATTERN_ID" "$PATTERN_LABEL" \
+    "$backend_repo" "$backend_ref" "$frontend_repo" "$frontend_ref"
+  render_file \
+    "$staging_dir/.webscaf" \
+    "$project_name" "$PATTERN_ID" "$PATTERN_LABEL" \
+    "$backend_repo" "$backend_ref" "$frontend_repo" "$frontend_ref"
 
   cp "$staging_dir/.env.example" "$staging_dir/.env"
   copy_example_env "$staging_dir/api"
