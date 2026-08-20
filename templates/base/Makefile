@@ -5,7 +5,7 @@ DOCKER_COMPOSE_CMD := $(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE)
 
 .DEFAULT_GOAL := help
 
-.PHONY: up build build_no_cache down down_volumes stop logs logs_api logs_web ps reup migrate check check_api check_web help
+.PHONY: up build build_no_cache build_prod down down_volumes stop logs logs_api logs_web ps reup migrate check check_api check_web test_e2e help
 
 up:
 	$(DOCKER_COMPOSE_CMD) up -d
@@ -15,6 +15,9 @@ build:
 
 build_no_cache:
 	$(DOCKER_COMPOSE_CMD) build --no-cache
+
+build_prod:
+	$(DOCKER_COMPOSE) -f docker-compose.prod.yml build
 
 down:
 	$(DOCKER_COMPOSE_CMD) down
@@ -50,6 +53,9 @@ check_api:
 check_web:
 	$(MAKE) -C web check ENV=$(ENV)
 
+test_e2e:
+	$(MAKE) -C api test_e2e ENV=$(ENV)
+
 help:
 	@echo "Usage: make [target] [ENV=dev|prod]"
 	@echo ""
@@ -57,6 +63,7 @@ help:
 	@echo "  up              Start the application"
 	@echo "  build           Build application images"
 	@echo "  build_no_cache  Build images without cache"
+	@echo "  build_prod      Build production application images"
 	@echo "  down            Stop and remove containers"
 	@echo "  down_volumes    Stop containers and remove volumes"
 	@echo "  stop            Stop containers"
@@ -67,3 +74,4 @@ help:
 	@echo "  reup            Restart the application"
 	@echo "  migrate         Apply backend database migrations"
 	@echo "  check           Run backend and frontend checks"
+	@echo "  test_e2e        Run the backend HTTP API contract tests"
