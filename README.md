@@ -3,8 +3,9 @@
 An interactive CLI for generating small script projects in multiple languages
 and authentication-ready web applications.
 
-mkscaf includes [webscaf](https://github.com/kodaimura/webscaf), so installing
-mkscaf provides both `mkscaf web` and the standalone `webscaf` command.
+mkscaf includes [webscaf](https://github.com/kodaimura/webscaf) and exposes it
+through `mkscaf web`. Install the standalone webscaf repository separately when
+the `webscaf` command is needed.
 
 ## Requirements
 
@@ -38,11 +39,10 @@ Start with the script language prompt:
 mkscaf script
 ```
 
-Start with the web pattern prompt. Both commands use the same bundled webscaf:
+Start with the web pattern prompt:
 
 ```sh
 mkscaf web
-webscaf
 ```
 
 ## Direct usage
@@ -54,7 +54,6 @@ mkscaf script typescript my-tool
 
 mkscaf web fast-react my-app
 mkscaf web nest-next my-next-app ../my-next-app
-webscaf fast-react my-app
 ```
 
 List the available choices:
@@ -62,7 +61,6 @@ List the available choices:
 ```sh
 mkscaf script patterns
 mkscaf web patterns
-webscaf patterns
 ```
 
 ### Script templates
@@ -108,6 +106,6 @@ make check
 make check
 ```
 
-The checks cover every script language, interactive and direct usage,
-equivalent output from `mkscaf web` and `webscaf`, scaffold component
-initialization, and protection against overwriting existing paths.
+The checks cover every script language, interactive and direct usage, web
+generation, scaffold component initialization, and protection against
+overwriting existing paths.

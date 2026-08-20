@@ -5,7 +5,6 @@ set -euo pipefail
 TEST_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$TEST_DIR/.." && pwd)
 MKSCAF="$ROOT_DIR/bin/mkscaf"
-WEBSCAF="$ROOT_DIR/bin/webscaf"
 TEMP_DIR=$(mktemp -d)
 
 cleanup() {
@@ -135,11 +134,7 @@ export WEBSCAF_BACKEND_REPO="file://$BACKEND_REPO"
 export WEBSCAF_FRONTEND_REPO="file://$FRONTEND_REPO"
 
 "$MKSCAF" web fast-react web-app "$TEMP_DIR/from-mkscaf" >/dev/null
-"$WEBSCAF" fast-react web-app "$TEMP_DIR/from-webscaf" >/dev/null
 assert_web_project "$TEMP_DIR/from-mkscaf"
-assert_web_project "$TEMP_DIR/from-webscaf"
-diff -qr "$TEMP_DIR/from-mkscaf" "$TEMP_DIR/from-webscaf" >/dev/null ||
-  fail "mkscaf web and webscaf generated different projects"
 
 (
   cd "$TEMP_DIR"

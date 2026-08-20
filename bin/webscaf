@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -euo pipefail
-
-BIN_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-ROOT_DIR=$(CDPATH= cd -- "$BIN_DIR/.." && pwd)
-
-export WEBSCAF_COMMAND_NAME=webscaf
-exec "$ROOT_DIR/vendor/webscaf/setup.sh" "$@"
