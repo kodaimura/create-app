@@ -5,16 +5,16 @@ web application.
 
 ## Supported patterns
 
-| Pattern | Backend | Frontend |
-| --- | --- | --- |
-| `fast-react` | [FastAPI](https://github.com/kodaimura/scaf-fast) | [React](https://github.com/kodaimura/scaf-react) |
-| `fast-next` | [FastAPI](https://github.com/kodaimura/scaf-fast) | [Next.js](https://github.com/kodaimura/scaf-next) |
-| `gin-react` | [Gin](https://github.com/kodaimura/scaf-gin) | [React](https://github.com/kodaimura/scaf-react) |
-| `gin-next` | [Gin](https://github.com/kodaimura/scaf-gin) | [Next.js](https://github.com/kodaimura/scaf-next) |
-| `genie-react` | [Genie](https://github.com/kodaimura/scaf-genie) | [React](https://github.com/kodaimura/scaf-react) |
-| `genie-next` | [Genie](https://github.com/kodaimura/scaf-genie) | [Next.js](https://github.com/kodaimura/scaf-next) |
-| `nest-react` | [NestJS](https://github.com/kodaimura/scaf-nest) | [React](https://github.com/kodaimura/scaf-react) |
-| `nest-next` | [NestJS](https://github.com/kodaimura/scaf-nest) | [Next.js](https://github.com/kodaimura/scaf-next) |
+| Pattern       | Backend                                           | Frontend                                          |
+| ------------- | ------------------------------------------------- | ------------------------------------------------- |
+| `fast-react`  | [FastAPI](https://github.com/kodaimura/scaf-fast) | [React](https://github.com/kodaimura/scaf-react)  |
+| `fast-next`   | [FastAPI](https://github.com/kodaimura/scaf-fast) | [Next.js](https://github.com/kodaimura/scaf-next) |
+| `gin-react`   | [Gin](https://github.com/kodaimura/scaf-gin)      | [React](https://github.com/kodaimura/scaf-react)  |
+| `gin-next`    | [Gin](https://github.com/kodaimura/scaf-gin)      | [Next.js](https://github.com/kodaimura/scaf-next) |
+| `genie-react` | [Genie](https://github.com/kodaimura/scaf-genie)  | [React](https://github.com/kodaimura/scaf-react)  |
+| `genie-next`  | [Genie](https://github.com/kodaimura/scaf-genie)  | [Next.js](https://github.com/kodaimura/scaf-next) |
+| `nest-react`  | [NestJS](https://github.com/kodaimura/scaf-nest)  | [React](https://github.com/kodaimura/scaf-react)  |
+| `nest-next`   | [NestJS](https://github.com/kodaimura/scaf-nest)  | [Next.js](https://github.com/kodaimura/scaf-next) |
 
 Patterns are defined independently in `patterns/*.conf`, so additional backend
 and frontend combinations can be added without changing the generation flow.
@@ -96,9 +96,14 @@ make migrate
 
 ```text
 my-app/
-  api/                  # selected backend
-  web/                  # selected frontend
-  .env                  # shared Compose settings
+  .github/              # GitHub Actions and contribution templates
+  docs/                 # GitHub, contribution, security, and operations guidance
+  api/                  # selected backend and its architecture contract
+  web/                  # selected frontend and its architecture contract
+  AGENTS.md              # project-wide AI instructions and component delegation
+  CLAUDE.md              # imports the project-wide instructions
+  .env.example          # tracked shared Compose settings template
+  .env                  # local shared Compose settings
   .webscaf              # generation metadata
   docker-compose.yml
   docker-compose.prod.yml
@@ -107,6 +112,13 @@ my-app/
 
 The root Compose files combine both components. Framework-specific commands
 remain available from the `api` and `web` directories.
+
+GitHub workflows and contribution files from the selected components are
+replaced with the project-wide versions at the generated repository root.
+References in component READMEs and agent instructions are updated to point to
+those root documents. Framework-specific `AGENTS.md`, `CLAUDE.md`, and
+`docs/ARCHITECTURE.md` files remain inside `api/` and `web/`; the root
+instructions delegate changes to them.
 
 When a component provides an executable `bin/scaf-init`, webscaf runs it with
 the project name immediately after cloning. Each scaffold is responsible for
