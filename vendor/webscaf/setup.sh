@@ -5,6 +5,7 @@ set -euo pipefail
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PATTERNS_DIR="$ROOT_DIR/patterns"
 TEMPLATES_DIR="$ROOT_DIR/templates/base"
+AGENT_TEMPLATES_DIR="$ROOT_DIR/templates/agents"
 COMMAND_NAME=${WEBSCAF_COMMAND_NAME:-./setup.sh}
 
 usage() {
@@ -151,6 +152,50 @@ initialize_component() {
   "$init_command" "$project_name"
 }
 
+remove_component_github_files() {
+  component_dir=$1
+
+  rm -rf "$component_dir/.github"
+  rm -f \
+    "$component_dir/docs/CONTRIBUTING.md" \
+    "$component_dir/docs/GITHUB_SETTINGS.md" \
+    "$component_dir/docs/RUNBOOK.md" \
+    "$component_dir/docs/SECURITY.md"
+  rmdir "$component_dir/docs" 2>/dev/null || true
+}
+
+rewrite_component_project_doc_references() {
+  component_dir=$1
+
+  for file in "$component_dir/README.md" "$component_dir/AGENTS.md"; do
+    if [ ! -f "$file" ]; then
+      continue
+    fi
+
+    sed \
+      -e 's|docs/CONTRIBUTING\.md|../docs/CONTRIBUTING.md|g' \
+      -e 's|docs/GITHUB_SETTINGS\.md|../docs/GITHUB_SETTINGS.md|g' \
+      -e 's|docs/RUNBOOK\.md|../docs/RUNBOOK.md|g' \
+      -e 's|docs/SECURITY\.md|../docs/SECURITY.md|g' \
+      "$file" > "$file.webscaf"
+    mv "$file.webscaf" "$file"
+  done
+}
+
+ensure_component_agent_files() {
+  component_dir=$1
+  component_type=$2
+  agent_template_dir="$AGENT_TEMPLATES_DIR/$component_type"
+
+  if [ ! -f "$component_dir/AGENTS.md" ]; then
+    cp "$agent_template_dir/AGENTS.md" "$component_dir/AGENTS.md"
+  fi
+
+  if [ ! -f "$component_dir/CLAUDE.md" ]; then
+    cp "$agent_template_dir/CLAUDE.md" "$component_dir/CLAUDE.md"
+  fi
+}
+
 render_file() {
   file=$1
   project_name=$2
@@ -198,14 +243,22 @@ generate_project() {
   initialize_component "$staging_dir/api" "$project_name"
   initialize_component "$staging_dir/web" "$project_name"
 
+  remove_component_github_files "$staging_dir/api"
+  remove_component_github_files "$staging_dir/web"
+  ensure_component_agent_files "$staging_dir/api" api
+  ensure_component_agent_files "$staging_dir/web" web
+  rewrite_component_project_doc_references "$staging_dir/api"
+  rewrite_component_project_doc_references "$staging_dir/web"
+
   rm -rf "$staging_dir/api/.git" "$staging_dir/web/.git"
   cp -R "$TEMPLATES_DIR/." "$staging_dir/"
-  mv "$staging_dir/env.template" "$staging_dir/.env"
+  mv "$staging_dir/env.template" "$staging_dir/.env.example"
 
-  render_file "$staging_dir/.env" "$project_name" "$PATTERN_ID" "$PATTERN_LABEL"
+  render_file "$staging_dir/.env.example" "$project_name" "$PATTERN_ID" "$PATTERN_LABEL"
   render_file "$staging_dir/README.md" "$project_name" "$PATTERN_ID" "$PATTERN_LABEL"
   render_file "$staging_dir/.webscaf" "$project_name" "$PATTERN_ID" "$PATTERN_LABEL"
 
+  cp "$staging_dir/.env.example" "$staging_dir/.env"
   copy_example_env "$staging_dir/api"
   copy_example_env "$staging_dir/web"
 
